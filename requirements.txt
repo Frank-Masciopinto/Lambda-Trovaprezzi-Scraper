@@ -10,6 +10,6 @@ click==8.1.8
 constantly==23.10.4
 cryptography==44.0.2
 Flask==3.0.3
-Scrapy==2.12.0
+Scrapy==2.11.2
 tls-client==1.0.1
 Twisted==24.11.0
