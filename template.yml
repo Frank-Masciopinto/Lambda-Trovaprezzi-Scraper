@@ -2,37 +2,35 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Flask API for TrovaPrezzi Scraper
 
-Globals:
-  Function:
-    Timeout: 30
-    MemorySize: 512
-    Runtime: python3.8
-
 Resources:
   FlaskFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: main.handler
+      Runtime: python3.8
       CodeUri: .
+      Timeout: 30
+      MemorySize: 512
       Events:
         HelloWorld:
           Type: Api
           Properties:
             Path: /
             Method: GET
-      Layers:
-        - !Ref DependenciesLayer
-
-  DependenciesLayer:
-    Type: AWS::Serverless::LayerVersion
-    Properties:
-      LayerName: scraper-dependencies
-      Description: Dependencies for scraper function
-      ContentUri: venv/
-      CompatibleRuntimes:
-        - python3.8
-      RetentionPolicy: Retain
     Metadata:
       BuildMethod: python3.8
-      BuildArchitecture: x86_64
+      BuildProperties:
+        UseContainer: false
+      AWS::SAM::Cli::Artifacts:
+        IgnoreFiles:
+          - .gitignore
+          - .git/**
+          - .aws-sam/**
+          - venv/**
+          - __pycache__/**
       Requirements: requirements.txt
+
+Outputs:
+  WebEndpoint:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
