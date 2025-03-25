@@ -33,3 +33,4 @@ s3_prefix = "trovaprezzi-scraper"
 region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
 image_repositories = []
+confirm_changeset = true
