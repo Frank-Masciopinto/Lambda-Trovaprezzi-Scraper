@@ -1,0 +1,32 @@
+lang_IT_headers = [
+    "it-IT,it;q=0.9",
+    "it-IT,it;q=0.9,en-US;q=0.8",
+    "it-IT,it;q=0.9,en;q=0.8",
+    "it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7",
+    "it-IT,it;q=0.9,fr-FR;q=0.8",
+    "it-IT,it;q=0.9,de-DE;q=0.8",
+    "it-IT,it;q=0.9,es-ES;q=0.8",
+    "it-IT,it;q=0.9,pt-PT;q=0.8",
+    "it-IT,it;q=0.9,fr-FR;q=0.8,en-US;q=0.7",
+    "it-IT,it;q=0.9,de-DE;q=0.8,en-US;q=0.7",
+    "it-IT,it;q=0.9,es-ES;q=0.8,en-US;q=0.7",
+    "it-IT,it;q=0.9,pt-PT;q=0.8,en-US;q=0.7",
+    "it-IT,it;q=0.9,en-US;q=0.8,fr-FR;q=0.7",
+    "it-IT,it;q=0.9,en-US;q=0.8,de-DE;q=0.7",
+    "it-IT,it;q=0.9,fr-FR;q=0.8,de-DE;q=0.7",
+    "it-IT,it;q=0.9,fr-FR;q=0.8,es-ES;q=0.7",
+    "it-IT,it;q=0.9,en-US;q=0.8,es-ES;q=0.7",
+    "it-IT,it;q=0.9,fr-FR;q=0.8,en;q=0.7",
+    "it-IT,it;q=0.9,en-US;q=0.8,ru;q=0.7",         # adding Russian fallback for diversity
+    "it-IT,it;q=0.9,en-US;q=0.8,pt-BR;q=0.7",
+    "it-IT,it;q=0.9,fr-FR;q=0.8,pt-PT;q=0.7",
+    "it-IT,it;q=0.9,es-ES;q=0.8,pt-PT;q=0.7",
+    "it-IT,it;q=0.9,en-US;q=0.8,es;q=0.7",
+    "it-IT,it;q=0.9,en-US;q=0.8,fr;q=0.7",
+    "it-IT,it;q=0.9,de-DE;q=0.8,en;q=0.7",
+    "it-IT,it;q=0.9,es-ES;q=0.8,en;q=0.7",
+    "it-IT,it;q=0.9,pt-PT;q=0.8,en;q=0.7",
+    "it-IT,it;q=0.9,en-US;q=0.8,it-IT;q=0.8",      # duplicate Italian for extra emphasis
+    "it-IT,it;q=0.9,en-US;q=0.8,fr-FR;q=0.7,de-DE;q=0.6",
+    "it-IT,it;q=0.9,es-ES;q=0.8,en-US;q=0.7,fr-FR;q=0.6"
+]

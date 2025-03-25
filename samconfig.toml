@@ -1,0 +1,35 @@
+version = 0.1
+
+[default]
+# AWS Profile to use, you can leave it empty to use the default profile
+profile = "default"
+
+# Region where you want to deploy your app
+region = "us-east-1"
+
+# S3 bucket for packaging the app artifacts
+s3_bucket = "your-s3-bucket-name"
+
+# Stack name for your deployed application
+stack_name = "flask-app-stack"
+
+# The capabilities to acknowledge during deployment, for example CAPABILITY_IAM if you create roles
+capabilities = ["CAPABILITY_IAM"]
+
+# Function name (for debugging)
+function_name = "FlaskAppFunction"
+
+[default.deploy]
+# You can specify which template file to use
+template = "template.yml"
+
+# Deploys the application
+guided = true
+
+[default.deploy.parameters]
+stack_name = "trovaprezzi-scraper"
+resolve_s3 = true
+s3_prefix = "trovaprezzi-scraper"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
+image_repositories = []
