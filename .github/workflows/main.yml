@@ -16,7 +16,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r Lambda/requirements.txt
+          pip install -r requirements.txt
           pip install aws-sam-cli
 
       - name: Configure AWS credentials
