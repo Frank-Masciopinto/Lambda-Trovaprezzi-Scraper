@@ -8,7 +8,7 @@ Resources:
     Properties:
       Handler: main.handler
       Runtime: python3.12
-      CodeUri: .
+      CodeUri: ./
       Timeout: 30
       MemorySize: 512
       Events:
