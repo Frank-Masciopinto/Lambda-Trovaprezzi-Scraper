@@ -1,8 +1,27 @@
-__pycache__
-*.pyc
-.git
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
 venv/
-tests/
+env/
+ENV/
+
+# SAM / AWS
+.aws-sam/
+dependencies/
+build/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Documentation
 *.md
-*.log 
-.aws-sam
+
+# OS
+.DS_Store

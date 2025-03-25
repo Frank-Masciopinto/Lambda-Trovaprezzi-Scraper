@@ -1,33 +1,38 @@
-name: Trovaprezzi Scraper
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Flask API for TrovaPrezzi Scraper
 
-on:
-  push:
-    branches:
-      - master  # Trigger on push to master branch
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.8
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+Resources:
+  FlaskFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: main.handler
+      CodeUri: .
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /
+            Method: GET
+      Layers:
+        - !Ref DependenciesLayer
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Set up AWS SAM
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-
-    - name: Install dependencies
-      run: |
-        curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
-        python get-pip.py
-        pip install aws-sam-cli
-
-    - name: Build SAM app
-      run: sam build
-
-    - name: Deploy SAM app
-      run: sam deploy --no-confirm-changeset --capabilities CAPABILITY_IAM
+  DependenciesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: scraper-dependencies
+      Description: Dependencies for scraper function
+      ContentUri: venv/
+      CompatibleRuntimes:
+        - python3.8
+      RetentionPolicy: Retain
+    Metadata:
+      BuildMethod: python3.8
+      BuildArchitecture: x86_64
+      Requirements: requirements.txt
