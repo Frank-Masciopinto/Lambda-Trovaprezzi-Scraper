@@ -1,54 +1,33 @@
+import json
+import boto3
 from scraping_logics.merchant_info_scraper import scrape_merchant_info
 
+lambda_client = boto3.client("lambda")
 
 def handler(event, context):
     """AWS Lambda handler function"""
-    event_name = event.get("queryStringParameters", {}).get("event_name", "Mascio!")
+    event_name = event.get("queryStringParameters", {}).get("event_name", "")
     venditore = event.get("queryStringParameters", {}).get("venditore", "")
+    
     if event_name == "scrape_merchant_info":
-        result = scrape_merchant_info(venditore)
+        # Call Lambda asynchronously to handle scraping
+        payload = json.dumps({"venditore": venditore})
+        
+        lambda_client.invoke(
+            FunctionName=context.function_name,  # Calls itself
+            InvocationType="Event",  # Asynchronous execution
+            Payload=payload
+        )
+        
         return {
             "statusCode": 200,
-            "body": [{"result": result}],
+            "body": json.dumps({"message": f"Scraping started for merchant: {venditore}"}),
             "headers": {"Content-Type": "application/json"},
         }
+    
     else:
         return {
             "statusCode": 400,
-            "body": [{"error": "Invalid event name"}],
+            "body": json.dumps({"error": "Invalid event name"}),
             "headers": {"Content-Type": "application/json"},
         }
-
-
-# Remove or comment out Flask code since we're not using it
-# app = Flask(__name__)
-# @app.route('/test', methods=['GET'])
-# def get_items():
-#     items_list = [{"id": 1, "name": "test Frank"}]
-#     return jsonify(items_list)
-
-# if __name__ == '__main__':
-#     app.run(debug=True)
-
-# class Command(BaseCommand):
-#     help = 'Run the TrovaPrezzi scraper locally'
-
-# def add_arguments(self, parser):
-#     parser.add_argument('--venditore', type=str, required=True)
-#     parser.add_argument('--categoria', type=str)
-
-# def handle(self, *args, **options):
-#     self.stdout.write('Starting scraper...')
-
-# result = get_pagination_urls(options["venditore"])
-# result = scrape_merchant_info(options["venditore"])
-# print(result)
-# if result['status'] == 'success':
-#             self.stdout.write(self.style.SUCCESS(
-#                 f"Successfully scraped merchant info\n"
-#                 # f"File saved at: {result['file_path']}"
-#             ))
-#         else:
-#             self.stdout.write(self.style.ERROR(
-#                 f"Error: {result['message']}"
-#             ))
