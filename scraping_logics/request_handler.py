@@ -282,7 +282,7 @@ class TLS_Scraper:
         # Initialize request history
         self.request_history = []
         self.csv_file = "request_history.csv"
-        self._ensure_csv_exists()
+        # self._ensure_csv_exists()
 
         # Load user agents from JSON file (same as TrovaPrezziRequester)
         # user_agents_path = os.path.join(os.path.dirname(__file__), "user_agents.json")
@@ -316,22 +316,23 @@ class TLS_Scraper:
     ):
         """Record request details to CSV file"""
         try:
-            with open(self.csv_file, "a", newline="", encoding="utf-8") as f:
-                import csv
+            print("Record request to CSV")
+            # with open(self.csv_file, "a", newline="", encoding="utf-8") as f:
+            #     import csv
 
-                writer = csv.writer(f)
-                writer.writerow(
-                    [
-                        datetime.now().isoformat(),
-                        url,
-                        proxy or "none",
-                        headers.get("User-Agent", "unknown"),
-                        status_code,
-                        retry_count,
-                        json.dumps(headers, ensure_ascii=False),
-                        response_length,
-                    ]
-                )
+            #     writer = csv.writer(f)
+            #     writer.writerow(
+            #         [
+            #             datetime.now().isoformat(),
+            #             url,
+            #             proxy or "none",
+            #             headers.get("User-Agent", "unknown"),
+            #             status_code,
+            #             retry_count,
+            #             json.dumps(headers, ensure_ascii=False),
+            #             response_length,
+            #         ]
+            #     )
         except Exception as e:
             print(f"⚠️ Error recording request to CSV: {str(e)}")
 
