@@ -27,12 +27,12 @@ jobs:
           aws-region: us-east-1
 
       - name: SAM build
-        working-directory: ./Lambda
+        working-directory: .
         run: |
           sam build
 
       - name: SAM deploy
-        working-directory: ./Lambda
+        working-directory: .
         run: |
           sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
 

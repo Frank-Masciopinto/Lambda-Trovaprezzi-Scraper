@@ -1,9 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Flask API for TrovaPrezzi Scraper
+Description: Lambda API for TrovaPrezzi Scraper
 
 Resources:
-  FlaskFunction:
+  ScraperFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: main.handler
@@ -11,11 +11,15 @@ Resources:
       CodeUri: ./
       Timeout: 30
       MemorySize: 512
+      AutoPublishAlias: live
+      DeploymentPreference:
+        Type: AllAtOnce
+        Alarms: []
       Events:
-        HelloWorld:
+        TestEndpoint:
           Type: Api
           Properties:
-            Path: /
+            Path: /test
             Method: GET
     Metadata:
       BuildMethod: python3.12

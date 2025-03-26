@@ -1,19 +1,22 @@
+def handler(event, context):
+    """AWS Lambda handler function"""
+    return {
+        'statusCode': 200,
+        'body': [{"id": 1, "name": "test Frank"}],
+        'headers': {
+            'Content-Type': 'application/json'
+        }
+    }
 
-from flask import Flask, jsonify
+# Remove or comment out Flask code since we're not using it
+# app = Flask(__name__)
+# @app.route('/test', methods=['GET'])
+# def get_items():
+#     items_list = [{"id": 1, "name": "test Frank"}]
+#     return jsonify(items_list)
 
-app = Flask(__name__)
-
-# Assuming you already have configured the Flask app and database
-@app.route('/test', methods=['GET'])
-def get_items():
-    
-    # Create a list of items to return in the response
-    items_list = [{"id": 1, "name": "test Frank"}]
-    
-    return jsonify(items_list)
-
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     app.run(debug=True)
 
 # class Command(BaseCommand):
 #     help = 'Run the TrovaPrezzi scraper locally'
