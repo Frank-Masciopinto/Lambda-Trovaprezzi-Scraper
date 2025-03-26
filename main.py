@@ -1,8 +1,10 @@
 def handler(event, context):
     """AWS Lambda handler function"""
+    event_name = event.get("queryStringParameters", {}).get("event_name", "Mascio!")
+
     return {
         'statusCode': 200,
-        'body': [{"id": 1, "name": "test Frank", "test": "XD testing this mf"}],
+        'body': [{"event_name": event_name}],
         'headers': {
             'Content-Type': 'application/json'
         }
