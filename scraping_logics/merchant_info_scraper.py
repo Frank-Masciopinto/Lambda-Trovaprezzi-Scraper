@@ -175,14 +175,14 @@ class MerchantInfoScraper:
         scrape_result = self._scrape()
         if scrape_result['status'] == 'success':
             # Send data to API
-            api_result = self.send_merchant_data()
-            if api_result['status'] == 'success':
-                return {
-                    "status": "success",
-                    "data": self.merchant_data,
-                    "api_response": api_result
-                }
-            return api_result
+            # api_result = self.send_merchant_data()
+            # if api_result['status'] == 'success':
+            #     return {
+            #         "status": "success",
+            #         "data": self.merchant_data,
+            #         "api_response": api_result
+            #     }
+            return scrape_result
         return scrape_result
 
     def _scrape(self) -> Dict[str, Any]:
