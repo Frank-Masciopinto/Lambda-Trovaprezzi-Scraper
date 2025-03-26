@@ -1,14 +1,24 @@
+from scraping_logics.merchant_info_scraper import scrape_merchant_info
+
+
 def handler(event, context):
     """AWS Lambda handler function"""
     event_name = event.get("queryStringParameters", {}).get("event_name", "Mascio!")
-
-    return {
-        'statusCode': 200,
-        'body': [{"event_name": event_name}],
-        'headers': {
-            'Content-Type': 'application/json'
+    venditore = event.get("queryStringParameters", {}).get("venditore", "")
+    if event_name == "scrape_merchant_info":
+        result = scrape_merchant_info(venditore)
+        return {
+            "statusCode": 200,
+            "body": [{"result": result}],
+            "headers": {"Content-Type": "application/json"},
         }
-    }
+    else:
+        return {
+            "statusCode": 400,
+            "body": [{"error": "Invalid event name"}],
+            "headers": {"Content-Type": "application/json"},
+        }
+
 
 # Remove or comment out Flask code since we're not using it
 # app = Flask(__name__)
@@ -23,17 +33,17 @@ def handler(event, context):
 # class Command(BaseCommand):
 #     help = 'Run the TrovaPrezzi scraper locally'
 
-    # def add_arguments(self, parser):
-    #     parser.add_argument('--venditore', type=str, required=True)
-    #     parser.add_argument('--categoria', type=str)
+# def add_arguments(self, parser):
+#     parser.add_argument('--venditore', type=str, required=True)
+#     parser.add_argument('--categoria', type=str)
 
-    # def handle(self, *args, **options):
-    #     self.stdout.write('Starting scraper...')
+# def handle(self, *args, **options):
+#     self.stdout.write('Starting scraper...')
 
-        # result = get_pagination_urls(options["venditore"])
-        # result = scrape_merchant_info(options["venditore"])
-        # print(result)
-        # if result['status'] == 'success':
+# result = get_pagination_urls(options["venditore"])
+# result = scrape_merchant_info(options["venditore"])
+# print(result)
+# if result['status'] == 'success':
 #             self.stdout.write(self.style.SUCCESS(
 #                 f"Successfully scraped merchant info\n"
 #                 # f"File saved at: {result['file_path']}"
@@ -41,4 +51,4 @@ def handler(event, context):
 #         else:
 #             self.stdout.write(self.style.ERROR(
 #                 f"Error: {result['message']}"
-#             )) 
+#             ))
