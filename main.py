@@ -2,7 +2,7 @@ def handler(event, context):
     """AWS Lambda handler function"""
     return {
         'statusCode': 200,
-        'body': [{"id": 1, "name": "test Frank"}],
+        'body': [{"id": 1, "name": "test Frank", "test": "XD testing this mf"}],
         'headers': {
             'Content-Type': 'application/json'
         }
