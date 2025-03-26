@@ -1,47 +1,34 @@
 import json
-import boto3
 from scraping_logics.merchant_info_scraper import scrape_merchant_info
 
-lambda_client = boto3.client("lambda")
-
 def handler(event, context):
-    """AWS Lambda handler function"""
-    
-    # Check if it's an async invocation (Lambda calling itself)
-    if "venditore" in event:
-        venditore = event["venditore"]
-        
-        try:
-            result = scrape_merchant_info(venditore)
-            print(f"Scraping completed for {venditore}: {result}")
-        except Exception as e:
-            print(f"Error in scraping {venditore}: {str(e)}")
+    """AWS Lambda handler function - Runs scraping directly"""
 
-        return {"statusCode": 200, "body": json.dumps({"message": "Scraping completed"})}
+    query_params = event.get("queryStringParameters", {})
+    venditore = query_params.get("venditore", "")
 
-    # Normal API Gateway invocation
-    event_name = event.get("queryStringParameters", {}).get("event_name", "")
-    venditore = event.get("queryStringParameters", {}).get("venditore", "")
+    if not venditore:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"error": "Missing 'venditore' parameter."}),
+            "headers": {"Content-Type": "application/json"},
+        }
 
-    if event_name == "scrape_merchant_info":
-        # Call Lambda asynchronously to handle scraping
-        payload = json.dumps({"venditore": venditore})
-        
-        lambda_client.invoke(
-            FunctionName=context.function_name,  # Calls itself
-            InvocationType="Event",  # Asynchronous execution
-            Payload=payload
-        )
+    try:
+        # Run scraping directly
+        result = scrape_merchant_info(venditore)
+        print(f"Scraping completed for {venditore}: {result}")
 
         return {
             "statusCode": 200,
-            "body": json.dumps({"message": f"Scraping started for merchant: {venditore}"}),
+            "body": json.dumps({"message": "Scraping completed", "data": result}),
             "headers": {"Content-Type": "application/json"},
         }
-    
-    else:
+
+    except Exception as e:
+        print(f"Error in scraping {venditore}: {str(e)}")
         return {
-            "statusCode": 400,
-            "body": json.dumps({"error": "Invalid event name"}),
+            "statusCode": 500,
+            "body": json.dumps({"error": str(e)}),
             "headers": {"Content-Type": "application/json"},
         }
