@@ -21,6 +21,15 @@ Resources:
           Properties:
             Path: /test
             Method: GET
+            Auth:
+              ApiKeyRequired: false
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'execute-api:Invoke'
+              Resource: '*'
     Metadata:
       BuildMethod: python3.12
       BuildProperties:
@@ -37,4 +46,4 @@ Resources:
 Outputs:
   WebEndpoint:
     Description: "API Gateway endpoint URL"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/test"
