@@ -3,11 +3,12 @@ import json
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 import requests
+import os
+from .request_handler import tls_scraper
 
-try:
-    from .request_handler import tls_scraper
-except ImportError:
-    from business_manager.scraping_logics.request_handler import tls_scraper
+BASE_API_URL = os.environ.get("BASE_API_URL", "http://172.17.0.1:8000")
+print(f"BASE_API_URL: {BASE_API_URL}")
+
 
 class MerchantInfoScraper:
     """Scraper for merchant information from TrovaPrezzi"""
@@ -16,7 +17,7 @@ class MerchantInfoScraper:
         self.venditore = venditore
         self.base_url = f"https://www.trovaprezzi.it/negozi/{venditore}#top_page"
         self.merchant_all_categories_url = f"https://www.trovaprezzi.it/negozi/{venditore}/categorie"
-        self.add_merchant_info_url = "http://172.17.0.1:8000/businessManager/onboarding/add-merchant-info/"
+        self.add_merchant_info_url = f"{BASE_API_URL}/businessManager/onboarding/add-merchant-info/"
         self.merchant_data = {}
         print(f"Initializing merchant info scraper for: {venditore}")
     

@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-import pandas as pd
 import os
 import json
 import requests
@@ -12,18 +11,11 @@ import asyncio
 import aiohttp
 from typing import List, Dict, Any
 import os
+from .request_handler import get_page_content, tls_scraper
 BASE_API_URL = os.environ.get("BASE_API_URL", "http://172.17.0.1:8000")
 print(f"BASE_API_URL: {BASE_API_URL}")
 # Try both import styles to ensure compatibility
-try:
-    # Relative import (should work when module is imported)
-    from .request_handler import get_page_content, tls_scraper
-except ImportError:
-    # Absolute import (should work when run as script)
-    from business_manager.scraping_logics.request_handler import (
-        get_page_content,
-        tls_scraper,
-    )
+
 
 
 class TrovaPrezziScraper:
@@ -43,7 +35,8 @@ class TrovaPrezziScraper:
         soup = BeautifulSoup(response.text, "html.parser")
         product_names = soup.select("a.item_name")
         product_prices = soup.select("div.item_total_price")
-
+        product_images = soup.select("a.item_image img")
+        product_redirect_urls = soup.select("div.item_actions a.cta_button")
         current_page = response.meta.get("page_number", 1)
         print(f"Processing page {current_page}")
         self.pages_scraped += 1
@@ -55,10 +48,11 @@ class TrovaPrezziScraper:
         print(f"Found {len(product_names)} products on page {current_page}")
 
         products_on_page = 0
-        for name, price in zip(product_names, product_prices):
+        for name, price, image, redirect_url in zip(product_names, product_prices, product_images, product_redirect_urls):
             product_name = name.get_text(strip=True)
             price_raw = price.get_text(" ", strip=True)
-
+            image_url = image.get("src") if image else None
+            redirect_url = redirect_url.get("href") if redirect_url else None
             import re
 
             match = re.search(r"((?:\d+\.)*\d+,\d+)", price_raw)
@@ -68,7 +62,8 @@ class TrovaPrezziScraper:
                 "Nome Prodotto": product_name,
                 "Prezzo Totale": price_total,
                 "Nome venditore": self.venditore,
-                "URL": response.url,
+                "URL": redirect_url,
+                "Image URL": image_url,
                 "Data Scraping": datetime.now().isoformat(),
                 "Pagina": current_page,
             }
@@ -85,7 +80,7 @@ class TrovaPrezziScraper:
         print(
             f"Total products so far: {self.total_products} from {self.pages_scraped} pages"
         )
-
+        return True
         # Look for the "next" (successivo) button
         # next_button = soup.select_one('div.pagination a[rel="next"]')
 
@@ -155,6 +150,8 @@ async def process_url(
         url_entry["scraped_products"] = len(scraper.products)
         url_entry["products"] = scraper.products
         # add the products to the database onboarding/add-products/
+        print(f"Adding products to the database: {url_entry}")
+        print(f"BASE_API_URL: {BASE_API_URL}")
         requests.post(
             f"{BASE_API_URL}/businessManager/onboarding/add-products/",
             json={"business_name": venditore, "products": url_entry},
@@ -182,11 +179,12 @@ async def process_urls_batch(
             batch_tasks = [
                 process_url(session, url_entry, venditore) for url_entry in batch
             ]
-            batch_results = await asyncio.gather(*batch_tasks)
-            urls[i : i + batch_size] = batch_results
-            # Add a small delay between batches to avoid overwhelming the server
-            if i + batch_size < len(urls):
-                await asyncio.sleep(random.uniform(0.2, 0.5))
+            batch_results = await asyncio.gather(*batch_tasks, return_exceptions=True)
+            for result in batch_results:
+                if isinstance(result, Exception):
+                    print("❌ One of the scraping tasks failed:", result)
+                else:
+                    urls[i : i + batch_size][batch_results.index(result)] = result
 
         return urls
 

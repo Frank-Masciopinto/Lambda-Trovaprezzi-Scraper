@@ -1,6 +1,6 @@
 import json
 from scraping_logics.merchant_info_scraper import scrape_merchant_info
-
+from scraping_logics.seller_products import run_spider_locally
 def handler(event, context):
     """AWS Lambda handler function - Runs scraping directly"""
 
@@ -8,7 +8,8 @@ def handler(event, context):
     venditore = query_params.get("venditore", "")
     action = query_params.get("action", "")
     user_id = query_params.get("user_id", "")
-    
+    payload = event.get("body", [])
+    print(f"Payload: {payload}")
     if action == "scrape_merchant_info":
         if not venditore or not user_id:
             return {
@@ -46,4 +47,20 @@ def handler(event, context):
                     "Content-Type": "application/json",
                     "Access-Control-Allow-Origin": "*"  # Add CORS header
                 },
+            }
+    elif action == "scrape_seller_products_by_category":
+        if not payload:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"error": "Missing required payload"}),
+                "headers": {"Content-Type": "application/json"},
+            }
+        try:
+            run_spider_locally(payload)
+        except Exception as e:
+            print(f"Error in scraping {venditore}: {str(e)}")
+            return {
+                "statusCode": 500,
+                "body": json.dumps({"error": str(e)}),
+                "headers": {"Content-Type": "application/json"},
             }

@@ -5,17 +5,16 @@ Description: Lambda API for TrovaPrezzi Scraper
 Resources:
   ScraperFunction:
     Type: AWS::Serverless::Function
-    Environment:
-      Variables:
-        BASE_API_URL: "https://api.yourdomain.com" # or "http://172.17.0.1:8000" for dev
-
     Properties:
       Handler: main.handler
-      Runtime: python3.12
+      Runtime: python3.9
       CodeUri: ./
       Timeout: 900
       MemorySize: 512
       AutoPublishAlias: live
+      Environment:
+        Variables:
+          BASE_API_URL: "http://172.17.0.1:8000" # or "http://172.17.0.1:8000" for dev
       DeploymentPreference:
         Type: AllAtOnce
         Alarms: []
@@ -34,6 +33,7 @@ Resources:
           - .gitignore
           - .git/**
           - .aws-sam/**
+          - asyncio/**
           - venv/**
           - __pycache__/**
       Requirements: requirements.txt
