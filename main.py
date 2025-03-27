@@ -6,29 +6,44 @@ def handler(event, context):
 
     query_params = event.get("queryStringParameters", {})
     venditore = query_params.get("venditore", "")
+    action = query_params.get("action", "")
+    user_id = query_params.get("user_id", "")
+    
+    if action == "scrape_merchant_info":
+        if not venditore or not user_id:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"error": "Missing required parameters"}),
+                "headers": {"Content-Type": "application/json"},
+            }
 
-    if not venditore:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"error": "Missing 'venditore' parameter."}),
-            "headers": {"Content-Type": "application/json"},
-        }
+        try:
+            # Run scraping directly
+            result = scrape_merchant_info(venditore)
+            # print(f"Scraping completed for {venditore}: {result}")
 
-    try:
-        # Run scraping directly
-        result = scrape_merchant_info(venditore)
-        print(f"Scraping completed for {venditore}: {result}")
+            # Ensure the result is JSON serializable
+            response_body = {
+                "message": "Scraping completed",
+                # "data": result
+            }
 
-        return {
-            "statusCode": 200,
-            "body": json.dumps({"message": "Scraping completed", "data": result}),
-            "headers": {"Content-Type": "application/json"},
-        }
+            return {
+                "statusCode": 200,
+                "body": json.dumps(response_body),
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*"  # Add CORS header
+                },
+            }
 
-    except Exception as e:
-        print(f"Error in scraping {venditore}: {str(e)}")
-        return {
-            "statusCode": 500,
-            "body": json.dumps({"error": str(e)}),
-            "headers": {"Content-Type": "application/json"},
-        }
+        except Exception as e:
+            print(f"Error in scraping {venditore}: {str(e)}")
+            return {
+                "statusCode": 500,
+                "body": json.dumps({"error": str(e)}),
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*"  # Add CORS header
+                },
+            }

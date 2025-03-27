@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import json
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 import requests
 
 try:
@@ -15,6 +15,8 @@ class MerchantInfoScraper:
     def __init__(self, venditore: str):
         self.venditore = venditore
         self.base_url = f"https://www.trovaprezzi.it/negozi/{venditore}#top_page"
+        self.merchant_all_categories_url = f"https://www.trovaprezzi.it/negozi/{venditore}/categorie"
+        self.add_merchant_info_url = "http://172.17.0.1:8000/businessManager/onboarding/add-merchant-info/"
         self.merchant_data = {}
         print(f"Initializing merchant info scraper for: {venditore}")
     
@@ -145,10 +147,11 @@ class MerchantInfoScraper:
 
         try:
             response = requests.post(
-                "http://localhost:8000/businessManager/onboarding/add-merchant-info/",
+                self.add_merchant_info_url,
                 json={
                     "business_name": self.venditore,
-                    "merchant_data": self.merchant_data
+                    "merchant_data": self.merchant_data,
+                    "categories": self.merchant_categories
                 }
             )
 
@@ -170,19 +173,47 @@ class MerchantInfoScraper:
                 "message": error_msg
             }
 
+    def extract_merchant_categories(self, soup: BeautifulSoup) -> List[Dict[str, Any]]:
+        """Extract merchant categories from the page"""
+        categories = []
+        category_list = soup.select("div.three_columns_list ul li")
+        
+        for li in category_list:
+            link = li.find('a')
+            if link:
+                results_span = li.select_one('span.results_number')
+                results_count = results_span.text.strip('()') if results_span else '0'
+                category_id = link.get('href', '').split('category_id=')[1]
+                
+                # Calculate pages using ceiling division
+                total_results = int(results_count)
+                pages = (total_results + 19) // 20  # This ensures at least 1 page if there are products
+                
+                category = {
+                    'title': link.get('title', ''),
+                    'href': link.get('href', ''),
+                    'category_id': category_id,
+                    'count': total_results,
+                    'pages': max(1, pages)  # Ensure at least 1 page
+                }
+                categories.append(category)
+        print("all categories: ", categories)
+        return categories
+
     def scrape(self) -> Dict[str, Any]:
         """Main scraping method"""
         scrape_result = self._scrape()
         if scrape_result['status'] == 'success':
             # Send data to API
-            # api_result = self.send_merchant_data()
-            # if api_result['status'] == 'success':
-            #     return {
-            #         "status": "success",
-            #         "data": self.merchant_data,
-            #         "api_response": api_result
-            #     }
-            return scrape_result
+            categories_result = self._scrape_categories()
+            api_result = self.send_merchant_data()
+
+            return {
+                "status": "success",
+                "data": self.merchant_data,
+                "categories": categories_result
+            }
+
         return scrape_result
 
     def _scrape(self) -> Dict[str, Any]:
@@ -226,20 +257,48 @@ class MerchantInfoScraper:
                 "status": "error",
                 "message": error_msg
             }
+        
+    def _scrape_categories(self) -> Dict[str, Any]:
+        """Internal scraping method"""
+        print(f"\n{'='*70}")
+        print(f"Starting merchant categories scrape for: {self.venditore}")
+        print(f"URL: {self.merchant_all_categories_url}")
+        
+        try:
+            # Get the page using TLS client
+            response = tls_scraper.get_page(self.merchant_all_categories_url, max_retries=100)
+            
+            if not response or response.status != 200:
+                print(f"❌ Failed to get page. Status: {getattr(response, 'status', 'Unknown')}")
+                return {"status": "error", "message": "Failed to fetch page"}
+
+            # Parse the page
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            # Extract all information
+            merchant_categories = self.extract_merchant_categories(soup)
+            
+            # Store the categories list directly (no need to unpack)
+            self.merchant_categories = merchant_categories
+            
+            # Print the results
+            print("\n📊 Merchant categories:")
+            print(json.dumps(merchant_categories, indent=2, ensure_ascii=False))
+            
+            return {
+                "status": "success",
+                "data": merchant_categories  # Return the list directly
+            }
+
+        except Exception as e:
+            error_msg = f"Error scraping merchant categories: {str(e)}"
+            print(f"❌ {error_msg}")
+            return {
+                "status": "error",
+                "message": error_msg
+            }
 
 def scrape_merchant_info(venditore: str) -> Dict[str, Any]:
     """Convenience function to scrape merchant info"""
     scraper = MerchantInfoScraper(venditore)
     return scraper.scrape()
-
-if __name__ == "__main__":
-    import argparse
-    
-    parser = argparse.ArgumentParser(description="TrovaPrezzi Merchant Info Scraper")
-    parser.add_argument("--venditore", type=str, required=True, help="Nome del venditore")
-    
-    args = parser.parse_args()
-    
-    result = scrape_merchant_info(args.venditore)
-    print("\nFinal Result:")
-    print(json.dumps(result, indent=2, ensure_ascii=False)) 

@@ -1,0 +1,7 @@
+{
+    "queryStringParameters": {
+        "venditore": "farmavola",
+        "action": "scrape_merchant_info",
+        "user_id": "1"
+    }
+} 

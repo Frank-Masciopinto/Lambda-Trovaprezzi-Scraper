@@ -1,15 +1,19 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: Lambda API for TrovaPrezzi Scraper
 
 Resources:
   ScraperFunction:
     Type: AWS::Serverless::Function
+    Environment:
+      Variables:
+        BASE_API_URL: "https://api.yourdomain.com" # or "http://172.17.0.1:8000" for dev
+
     Properties:
       Handler: main.handler
       Runtime: python3.12
       CodeUri: ./
-      Timeout: 30
+      Timeout: 900
       MemorySize: 512
       AutoPublishAlias: live
       DeploymentPreference:

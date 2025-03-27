@@ -11,7 +11,9 @@ import random
 import asyncio
 import aiohttp
 from typing import List, Dict, Any
-
+import os
+BASE_API_URL = os.environ.get("BASE_API_URL", "http://172.17.0.1:8000")
+print(f"BASE_API_URL: {BASE_API_URL}")
 # Try both import styles to ensure compatibility
 try:
     # Relative import (should work when module is imported)
@@ -85,24 +87,22 @@ class TrovaPrezziScraper:
         )
 
         # Look for the "next" (successivo) button
-        next_button = soup.select_one('div.pagination a[rel="next"]')
+        # next_button = soup.select_one('div.pagination a[rel="next"]')
 
-        if next_button and next_button.get("href"):
-            next_url = f"https://www.trovaprezzi.it{next_button.get('href')}"
-            print(f"Next page found: {next_url}")
+        # if next_button and next_button.get("href"):
+        #     next_url = f"https://www.trovaprezzi.it{next_button.get('href')}"
+        #     print(f"Next page found: {next_url}")
 
-            # Request the next page
-            get_page_content(
-                url=next_url,
-                venditore=self.venditore,
-                categoria=self.categoria,
-                page_number=current_page + 1,
-                callback=self.parse_products,
-                is_first_request=False,
-            )
-        else:
-            print("No next page button found. Scraping complete.")
-            self.total_pages = current_page  # Update total pages
+        #     # Request the next page
+        #     get_page_content(
+        #         url=next_url,
+        #         venditore=self.venditore,
+        #         categoria=self.categoria,
+        #         page_number=current_page + 1,
+        #         callback=self.parse_products,
+        #         is_first_request=False,
+        #     )
+        # else:
 
     def get_start_url(self):
         """
@@ -121,13 +121,16 @@ class TrovaPrezziScraper:
         return start_url
 
 
-async def process_url(session: aiohttp.ClientSession, url_entry: Dict[str, Any], venditore: str) -> Dict[str, Any]:
+async def process_url(
+    session: aiohttp.ClientSession, url_entry: Dict[str, Any], venditore: str
+) -> Dict[str, Any]:
     """
     Process a single URL asynchronously
     """
     if url_entry["scraped"]:
         print(f"\nSkipping already scraped URL: {url_entry['url']}")
         return url_entry
+    scraper = TrovaPrezziScraper(venditore)
 
     print(f"\nProcessing URL: {url_entry['url']}")
     print(f"Page number: {url_entry['page_number']}")
@@ -151,7 +154,11 @@ async def process_url(session: aiohttp.ClientSession, url_entry: Dict[str, Any],
         url_entry["scraped"] = True
         url_entry["scraped_products"] = len(scraper.products)
         url_entry["products"] = scraper.products
-
+        # add the products to the database onboarding/add-products/
+        requests.post(
+            f"{BASE_API_URL}/businessManager/onboarding/add-products/",
+            json={"business_name": venditore, "products": url_entry},
+        )
         print(f"\n=== Page {url_entry['page_number']} Complete ===")
         print(f"Products found: {url_entry['scraped_products']}")
 
@@ -162,32 +169,25 @@ async def process_url(session: aiohttp.ClientSession, url_entry: Dict[str, Any],
     return url_entry
 
 
-async def process_urls_batch(urls: List[Dict[str, Any]], venditore: str, batch_size: int = 20) -> List[Dict[str, Any]]:
+async def process_urls_batch(
+    urls: List[Dict[str, Any]], venditore: str, batch_size: int = 20
+) -> List[Dict[str, Any]]:
     """
     Process URLs in batches with concurrency control
     """
     async with aiohttp.ClientSession() as session:
         tasks = []
         for i in range(0, len(urls), batch_size):
-            batch = urls[i:i + batch_size]
+            batch = urls[i : i + batch_size]
             batch_tasks = [
-                process_url(session, url_entry, venditore)
-                for url_entry in batch
+                process_url(session, url_entry, venditore) for url_entry in batch
             ]
             batch_results = await asyncio.gather(*batch_tasks)
-            urls[i:i + batch_size] = batch_results
-            #add a post api request to add the products to the database onboarding/add-products/
-            requests.post(
-                "http://localhost:8000/businessManager/onboarding/add-products/",
-                json={
-                    "business_name": venditore,
-                    "products": batch_results
-                }
-            )
+            urls[i : i + batch_size] = batch_results
             # Add a small delay between batches to avoid overwhelming the server
             if i + batch_size < len(urls):
                 await asyncio.sleep(random.uniform(0.2, 0.5))
-        
+
         return urls
 
 
@@ -200,6 +200,8 @@ def run_spider_locally(urls_array: List[Dict[str, Any]]) -> Dict[str, Any]:
         "url": str,
         "scraped": bool,
         "scraped_products": int,
+        "category_id": str,
+        "category_name": str,
         "products": list
     }
     """
@@ -210,7 +212,6 @@ def run_spider_locally(urls_array: List[Dict[str, Any]]) -> Dict[str, Any]:
         # Initialize scraper with the first URL's vendor name
         first_url = urls_array[0]["url"]
         venditore = first_url.split("/negozi/")[1].split("/")[0]
-        scraper = TrovaPrezziScraper(venditore)
 
         # Run the async processing
         loop = asyncio.new_event_loop()
@@ -231,18 +232,14 @@ def run_spider_locally(urls_array: List[Dict[str, Any]]) -> Dict[str, Any]:
             "total_products": total_products,
             "venditore": venditore,
             "pages_scraped": scraped_pages,
-            "urls_data": urls_array
+            "urls_data": urls_array,
         }
 
     except Exception as e:
         print("\n=== Error ===")
         print(f"Error: {str(e)}")
         print("Stack trace:", traceback.format_exc())
-        return {
-            "status": "error",
-            "message": str(e),
-            "urls_data": urls_array
-        }
+        return {"status": "error", "message": str(e), "urls_data": urls_array}
 
 
 def get_pagination_urls(negozio):
