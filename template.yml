@@ -14,7 +14,7 @@ Resources:
       AutoPublishAlias: live
       Environment:
         Variables:
-          BASE_API_URL: "http://172.17.0.1:8000" # or "http://172.17.0.1:8000" for dev
+          BASE_API_URL: "https://prezzo-giusto-a627e6a2eda3.herokuapp.com" # or "http://172.17.0.1:8000" for dev
       DeploymentPreference:
         Type: AllAtOnce
         Alarms: []
