@@ -1,6 +1,8 @@
 {
     "queryStringParameters": {
-        "action": "scrape_scheda_prodotto",
+        "action": "scrape_scheda_prodotto"
+    },
+    "body": {
         "scraping_job_id": "1",
         "titolo_prodotto": "caffè",
         "categoria_id": "263"

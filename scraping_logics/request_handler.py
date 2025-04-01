@@ -753,9 +753,19 @@ class TLS_Scraper:
                             meta=meta,
                             headers=headers_dict,
                         )
+                    elif response.status_code == 301:
+                        print("Got 301 Moved Permanently response")
+                        # Get the final URL from the Location header
+                        final_url = response.headers.get('Location', '')
+                        if final_url:
+                            print(f"Redirected to: {final_url}")
+                            # Update the URL and retry
+                            url = final_url
+                            continue
                     else:
                         print(f"⚠️ ERROR: Got status code {response.status_code}")
                         print(f"Response preview: {response_text[:500]}...")
+
 
                         # Return a response object even with error status so callback can handle it
                         return ScraperResponse(
@@ -1118,13 +1128,11 @@ def get_page_content(
                 try:
                     result = callback(response)
                     print(f"{log_prefix} Callback completed successfully")
-                    return True
+                    return response
                 except Exception as e:
                     print(f"{log_prefix} ⚠️ ERROR IN CALLBACK: {str(e)}")
                     traceback.print_exc()
                     return False
-            else:
-                return True
         else:
             print(f"{log_prefix} ❌ FAILED TO FETCH PAGE: No response received")
 

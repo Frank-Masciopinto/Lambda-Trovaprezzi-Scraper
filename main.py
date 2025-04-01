@@ -74,6 +74,7 @@ def handler(event, context):
             result = scraper.estrai_dati_pagina()
             return {
                 "statusCode": 200,
+                "body": json.dumps(result),
                 "headers": {"Content-Type": "application/json"},
             }
         except Exception as e:
