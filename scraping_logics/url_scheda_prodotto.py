@@ -33,10 +33,11 @@ class SchedaProdottoScraper:
         return f"https://www.trovaprezzi.it/categoria.aspx?id={self.categoria_id}&libera={self.titolo_prodotto}"
     
     
-    def estrai_dati_pagina():
+    def estrai_dati_pagina(self):
         """Estrae prezzi e venditori con una sola richiesta HTTP, gestendo le varianti di prodotto"""
         prezzi = []
         venditori = []
+        url = self.url
         url_utilizzato = url
         
         logging.info(f"Inizio scraping URL: {url}")
@@ -50,7 +51,7 @@ class SchedaProdottoScraper:
             
             if not response:
                 logging.error("Failed to get page content")
-                return [], [], url
+                return "Failed to get page content", False
                 
             # Get the final URL from response
             final_url = response.url
@@ -60,7 +61,7 @@ class SchedaProdottoScraper:
                 
             if response.status != 200:
                 logging.error(f"Errore nella richiesta: {response.status}")
-                return [], [], url
+                return "Errore nella richiesta", False
                 
             time.sleep(random.uniform(2, 4))
             soup = BeautifulSoup(response.text, 'html.parser')
@@ -298,4 +299,4 @@ class SchedaProdottoScraper:
             
         except Exception as e:
             logging.error(f"Errore: {e}")
-            return [], [], self.titolo_prodotto
+            return e, False

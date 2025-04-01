@@ -1,20 +1,8 @@
 {
     "queryStringParameters": {
-        "venditore": "farmavola",
-        "action": "scrape_seller_products_by_category",
-        "user_id": "1"
-    },
-    "body": [
-        {
-            "page_number": 1,
-            "business_name": "farmavola",
-            "url": "https://www.trovaprezzi.it/negozi/farmavola/offerte?category_id=263",
-            "category_id": "263",
-            "category_name": "A Tavola",
-            "scraped": false,
-            "scraped_products": 0,
-            "total_products": 1,
-            "products": []
-        }
-    ]
+        "action": "scrape_scheda_prodotto",
+        "scraping_job_id": "1",
+        "titolo_prodotto": "caffè",
+        "categoria_id": "263"
+    }
 }

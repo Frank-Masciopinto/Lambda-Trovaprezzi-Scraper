@@ -224,7 +224,20 @@ def run_spider_locally(urls_array: List[Dict[str, Any]]) -> Dict[str, Any]:
         print("\n=== Scraping Complete ===")
         print(f"Total pages processed: {scraped_pages}/{len(urls_array)}")
         print(f"Total products found: {total_products}")
-
+        
+        # Update business scraping status
+        try:
+            response = requests.post(
+                f"{BASE_API_URL}/businessManager/update-scraping-status/",
+                json={"business_name": venditore}
+            )
+            if response.status_code == 200:
+                print(f"Successfully updated scraping status for {venditore}")
+            else:
+                print(f"Failed to update scraping status: {response.status_code}")
+        except Exception as e:
+            print(f"Error updating scraping status: {str(e)}")
+        
         return {
             "status": "success",
             "total_products": total_products,
@@ -232,6 +245,7 @@ def run_spider_locally(urls_array: List[Dict[str, Any]]) -> Dict[str, Any]:
             "pages_scraped": scraped_pages,
             "urls_data": urls_array,
         }
+
 
     except Exception as e:
         print("\n=== Error ===")

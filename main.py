@@ -1,6 +1,8 @@
 import json
 from scraping_logics.merchant_info_scraper import scrape_merchant_info
 from scraping_logics.seller_products import run_spider_locally
+from scraping_logics.url_scheda_prodotto import SchedaProdottoScraper
+
 def handler(event, context):
     """AWS Lambda handler function - Runs scraping directly"""
 
@@ -34,7 +36,7 @@ def handler(event, context):
                 "body": json.dumps(response_body),
                 "headers": {
                     "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*"  # Add CORS header
+                    "Access-Control-Allow-Origin": "*",  # Add CORS header
                 },
             }
 
@@ -45,7 +47,7 @@ def handler(event, context):
                 "body": json.dumps({"error": str(e)}),
                 "headers": {
                     "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*"  # Add CORS header
+                    "Access-Control-Allow-Origin": "*",  # Add CORS header
                 },
             }
     elif action == "scrape_seller_products_by_category":
@@ -57,6 +59,23 @@ def handler(event, context):
             }
         try:
             run_spider_locally(payload)
+        except Exception as e:
+            print(f"Error in scraping {venditore}: {str(e)}")
+            return {
+                "statusCode": 500,
+                "body": json.dumps({"error": str(e)}),
+                "headers": {"Content-Type": "application/json"},
+            }
+    elif action == "scrape_scheda_prodotto":
+        try:
+            titolo_prodotto = payload.get("titolo_prodotto", "")
+            categoria_id = payload.get("categoria_id", "")
+            scraper = SchedaProdottoScraper(titolo_prodotto, categoria_id)
+            result = scraper.estrai_dati_pagina()
+            return {
+                "statusCode": 200,
+                "headers": {"Content-Type": "application/json"},
+            }
         except Exception as e:
             print(f"Error in scraping {venditore}: {str(e)}")
             return {
