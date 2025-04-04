@@ -1,10 +1,45 @@
 {
     "queryStringParameters": {
-        "action": "scrape_scheda_prodotto"
+        "action": "scrape_products_competitors"
     },
     "body": {
-        "scraping_job_id": "1",
-        "titolo_prodotto": "caffè",
-        "categoria_id": "263"
+        "scraping_job": {
+            "id": 2,
+            "products": [
+                {
+                    "id": 6,
+                    "name": "Named Tea Tree Oil Melaleuca 10ml",
+                    "price": "10.00",
+                    "url": "/goto/413744359?impression=Vzl6eFN4eHZRNFR6eHNPUVlyQmdxWGxRa1V1ZXpleldsMGRZZExtMmF5T1J6NFVuY295UXp3PT01&pos=1&nb_results=1",
+                    "scraping_date": "2025-03-31T13:50:53.527227Z",
+                    "business": 10,
+                    "category": {
+                        "id": 24,
+                        "name": "Erboristeria e Omeopatia"
+                    },
+                    "image_url": "https://pics.trovaprezzi.it/it-100x100/413744359.jpg",
+                    "scheda_prodotto": null
+                },
+                {
+                    "id": 7,
+                    "name": "Microlife Afib Advanced Easy",
+                    "price": "90.00",
+                    "url": "/goto/461383676?impression=Vzl6eFN4eHZRNFR6eHNPUVlyQmdxWGxRa1V1ZXpleldCQnVrUlNucnVzKzNXeDRhWHY5MkRBPT01&pos=1&nb_results=1",
+                    "scraping_date": "2025-03-31T13:50:55.653207Z",
+                    "business": 10,
+                    "category": {
+                        "id": 23,
+                        "name": "Elettromedicali"
+                    },
+                    "image_url": "https://pics.trovaprezzi.it/it-100x100/461383676.jpg",
+                    "scheda_prodotto": null
+                }
+            ],
+            "status": "in_progress",
+            "created_at": "2025-04-03T11:40:27.129790Z",
+            "updated_at": "2025-04-03T11:40:27.129863Z",
+            "error_message": null,
+            "result_data": null
+        }
     }
 }

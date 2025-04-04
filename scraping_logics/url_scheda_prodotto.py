@@ -19,9 +19,10 @@ print(f"BASE_API_URL: {BASE_API_URL}")
 
 
 class SchedaProdottoScraper:
-    def __init__(self, titolo_prodotto, categoria_id=None):
+    def __init__(self, titolo_prodotto, categoria_id=None, scheda_prodotto=None):
         self.titolo_prodotto = titolo_prodotto
         self.categoria_id = categoria_id
+        self.scheda_prodotto = scheda_prodotto
         self.url = self.get_start_url()
         self.products = []
         self.total_products = 0
@@ -32,7 +33,7 @@ class SchedaProdottoScraper:
             self.categoria_id = "-1"
         return f"https://www.trovaprezzi.it/categoria.aspx?id={self.categoria_id}&libera={self.titolo_prodotto}"
 
-    def estrai_dati_pagina(self):
+    def cerca_scheda_prodotto_estrai_dati_competitor(self):
         """Estrae prezzi e venditori con una sola richiesta HTTP, gestendo le varianti di prodotto"""
         prezzi = []
         venditori = []
@@ -352,6 +353,73 @@ class SchedaProdottoScraper:
                             )
 
             # Salva nella cache
+            print(f"Primi 10 competitors estratti: {competitors[:10]}")
+            print(f"URL utilizzato per scraping: {url_utilizzato}")
+            return competitors[:10], url_utilizzato
+
+        except Exception as e:
+            print(f"Errore: {e}")
+            return e, False
+
+    def estrai_dati_competitor(self):
+        """Estrae prezzi e venditori con una sola richiesta HTTP, gestendo le varianti di prodotto"""
+        prezzi = []
+        venditori = []
+        url = self.url
+        url_utilizzato = url
+        competitors = []
+        print(f"Inizio scraping URL: {url}")
+
+        try:
+            import re
+            from urllib.parse import urlparse
+
+            # Use get_page_content instead of direct requests
+            response = get_page_content(url, "trovaprezzi", callback=lambda r: r)
+            print("V ->> returned response", response)
+            if not response:
+                print("Failed to get page content")
+                return "Failed to get page content", False
+
+            # Get the final URL from response
+            final_url = response.url
+            if final_url != url:
+                print(f"Reindirizzamento rilevato: {url} → {final_url}")
+                url_utilizzato = final_url
+
+            if response.status != 200:
+                print(f"Errore nella richiesta: {response.status}")
+                return "Errore nella richiesta", False
+
+            soup = BeautifulSoup(response.text, "html.parser")
+
+            # Estrazione prezzi
+            elementi_prezzo = soup.select("div.item_total_price")
+            elementi_venditore = soup.select("div.merchant_name_and_logo")
+
+            for prezzo, venditore in zip(elementi_prezzo, elementi_venditore):
+                try:
+                    prezzo_text = (
+                        prezzo.text.strip()
+                        .replace("€", "")
+                        .replace("Tot", "")
+                        .replace(".", "")
+                        .replace(",", ".")
+                        .strip()
+                    )
+                    venditore_text = venditore.select_one("a")["href"].split("/")[-1]
+                    competitors.append(
+                        {"prezzo": float(prezzo_text), "venditore": venditore_text}
+                    )
+                except Exception as e:
+                    print(f"Errore nel parsing del prezzo: {e}")
+                    continue
+
+            # Estrazione venditori
+            print(f"Trovati {len(competitors)} competitors")
+
+            # Aggiungere questo codice dopo l'estrazione dei venditori ma prima del salvataggio nella cache
+            # Intorno alla riga 335-340 della funzione estrai_dati_pagina
             print(f"Primi 10 competitors estratti: {competitors[:10]}")
             print(f"URL utilizzato per scraping: {url_utilizzato}")
             return competitors[:10], url_utilizzato
