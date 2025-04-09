@@ -3,8 +3,10 @@ from scraping_logics.merchant_info_scraper import scrape_merchant_info
 from scraping_logics.seller_products import run_spider_locally
 from scraping_logics.url_scheda_prodotto import SchedaProdottoScraper
 import asyncio
-import traceback
-
+import traceback, os
+import requests
+BASE_API_URL = os.environ.get("BASE_API_URL", "http://host.docker.internal:8000")
+print(f"BASE_API_URL: {BASE_API_URL}")
 def handler(event, context):
     """AWS Lambda handler function - Runs scraping directly"""
 
@@ -108,6 +110,15 @@ def handler(event, context):
             results = loop.run_until_complete(asyncio.gather(*tasks))
             scraping_job['result_data'] = results
             print(f"All results (products with competitor data): {results}")
+            response = requests.post(
+                f"{BASE_API_URL}/businessManager/scraping/job/update/",
+                json=scraping_job
+            )
+            print(f"Response: {BASE_API_URL}")
+            if response.status_code == 200:
+                print(f"Successfully updated scraping status for {venditore}")
+            else:
+                print(f"Failed to update scraping status: {response.status_code}")
             return {
                 "statusCode": 200,
                 "headers": {"Content-Type": "application/json"},
