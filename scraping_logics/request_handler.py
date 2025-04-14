@@ -20,12 +20,6 @@ import asyncio
 from datetime import datetime
 from .configs.user_agents import (
     chrome132_user_agents, chrome131_user_agents, chrome130_user_agents,
-    chrome129_user_agents, chrome128_user_agents, chrome127_user_agents,
-    chrome126_user_agents, chrome125_user_agents, chrome124_user_agents,
-    chrome123_user_agents, chrome122_user_agents, chrome121_user_agents,
-    chrome120_user_agents, firefox_120_user_agents, firefox_121_user_agents,
-    edge_120_user_agents, edge_121_user_agents, safari_17_user_agents,
-    safari_16_user_agents, opera_103_user_agents, brave_user_agents
 )
 import hashlib
 from .configs.languages import lang_IT_headers

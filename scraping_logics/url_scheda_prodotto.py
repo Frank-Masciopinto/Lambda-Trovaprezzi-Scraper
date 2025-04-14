@@ -31,7 +31,7 @@ class SchedaProdottoScraper:
     def get_start_url(self):
         if self.categoria_id == "1":
             self.categoria_id = "-1"
-        return f"https://www.trovaprezzi.it/categoria.aspx?id={self.categoria_id}&libera={self.titolo_prodotto}"
+        return f"https://www.trovaprezzi.it/categoria.aspx?id={-1}&libera={self.titolo_prodotto}"
 
     def cerca_scheda_prodotto_estrai_dati_competitor(self):
         """Estrae prezzi e venditori con una sola richiesta HTTP, gestendo le varianti di prodotto"""
