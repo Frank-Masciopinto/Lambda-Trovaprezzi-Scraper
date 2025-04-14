@@ -5,6 +5,7 @@ from scraping_logics.url_scheda_prodotto import SchedaProdottoScraper
 import asyncio
 import traceback, os
 import requests
+
 BASE_API_URL = os.environ.get("BASE_API_URL", "http://host.docker.internal:8000")
 print(f"BASE_API_URL: {BASE_API_URL}")
 def handler(event, context):
@@ -79,6 +80,8 @@ def handler(event, context):
 
             async def scrape_product(product):
                 titolo_prodotto = product.get("name", "")
+                #make titolo url encoded %20
+                titolo_prodotto = titolo_prodotto.replace(" ", "%20")
                 categoria_id = product.get("category", {}).get("id", "")
                 scheda_prodotto = product.get("scheda_prodotto", None)
                 scraper = SchedaProdottoScraper(
@@ -100,7 +103,8 @@ def handler(event, context):
                 #only keep id and result_data
                 result = {
                     "product_id": product.get("id", ""),
-                    "scraping_result": result
+                    "scraping_result": result,
+                    "status": "completed"
                 }
                 return result
 

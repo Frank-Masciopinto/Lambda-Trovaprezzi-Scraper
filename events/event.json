@@ -19,20 +19,6 @@
                     },
                     "image_url": "https://pics.trovaprezzi.it/it-100x100/413744359.jpg",
                     "scheda_prodotto": null
-                },
-                {
-                    "id": 7,
-                    "name": "Microlife Afib Advanced Easy",
-                    "price": "90.00",
-                    "url": "/goto/461383676?impression=Vzl6eFN4eHZRNFR6eHNPUVlyQmdxWGxRa1V1ZXpleldCQnVrUlNucnVzKzNXeDRhWHY5MkRBPT01&pos=1&nb_results=1",
-                    "scraping_date": "2025-03-31T13:50:55.653207Z",
-                    "business": 10,
-                    "category": {
-                        "id": 23,
-                        "name": "Elettromedicali"
-                    },
-                    "image_url": "https://pics.trovaprezzi.it/it-100x100/461383676.jpg",
-                    "scheda_prodotto": null
                 }
             ],
             "status": "in_progress",

@@ -387,7 +387,7 @@ class SchedaProdottoScraper:
                 print(f"Reindirizzamento rilevato: {url} → {final_url}")
                 url_utilizzato = final_url
 
-            if response.status != 200:
+            if not str(response.status).startswith('2'):
                 print(f"Errore nella richiesta: {response.status}")
                 return "Errore nella richiesta", False
 
