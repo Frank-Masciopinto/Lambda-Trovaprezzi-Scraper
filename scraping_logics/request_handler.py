@@ -18,10 +18,21 @@ import traceback
 import secrets
 import asyncio
 from datetime import datetime
-from .configs.user_agents import chrome122_user_agents, chrome121_user_agents, chrome120_user_agents
+from .configs.user_agents import (
+    chrome132_user_agents, chrome131_user_agents, chrome130_user_agents,
+    chrome129_user_agents, chrome128_user_agents, chrome127_user_agents,
+    chrome126_user_agents, chrome125_user_agents, chrome124_user_agents,
+    chrome123_user_agents, chrome122_user_agents, chrome121_user_agents,
+    chrome120_user_agents, firefox_120_user_agents, firefox_121_user_agents,
+    edge_120_user_agents, edge_121_user_agents, safari_17_user_agents,
+    safari_16_user_agents, opera_103_user_agents, brave_user_agents
+)
 import hashlib
 from .configs.languages import lang_IT_headers
 import time
+import string
+from datetime import datetime, timedelta
+from urllib.parse import quote
 # For handling responses from various libraries
 class CustomResponse:
     """A custom response wrapper for compatibility between different HTTP libraries"""
@@ -233,19 +244,48 @@ class TLS_Scraper:
         Returns a new TLS client session with a randomized client identifier.
         Uses secrets.choice for secure randomness.
         """
-        # Map of Chrome versions to their corresponding user agents
-        chrome_versions = {
-            "chrome_120": chrome120_user_agents,
-            "chrome_121": chrome121_user_agents,
-            "chrome_122": chrome122_user_agents,
+        # Map of browser versions to their corresponding user agents
+        browser_versions = {
+            # Chrome versions
+            "chrome_132": chrome132_user_agents,
+            "chrome_131": chrome131_user_agents,
+            "chrome_130": chrome130_user_agents,
+            # "chrome_129": chrome129_user_agents,
+            # "chrome_128": chrome128_user_agents,
+            # "chrome_127": chrome127_user_agents,
+            # "chrome_126": chrome126_user_agents,
+            # "chrome_125": chrome125_user_agents,
+            # "chrome_124": chrome124_user_agents,
+            # "chrome_123": chrome123_user_agents,
+            # "chrome_122": chrome122_user_agents,
+            # "chrome_121": chrome121_user_agents,
+            # "chrome_120": chrome120_user_agents,
+            
+            # # Firefox versions
+            # "firefox_120": firefox_120_user_agents,
+            # "firefox_121": firefox_121_user_agents,
+            
+            # # Edge versions
+            # "edge_120": edge_120_user_agents,
+            # "edge_121": edge_121_user_agents,
+            
+            # # Safari versions
+            # "safari_16": safari_16_user_agents,
+            # "safari_17": safari_17_user_agents,
+            
+            # # Opera versions
+            # "opera_103": opera_103_user_agents,
+            
+            # # Brave versions
+            # "brave": brave_user_agents,
         }
         
-        # Select a random Chrome version
-        client_identifier = secrets.choice(list(chrome_versions.keys()))
+        # Select a random browser version
+        client_identifier = secrets.choice(list(browser_versions.keys()))
         print(f"🔹 Using random TLS client identifier: {client_identifier}")
         
         # Get corresponding user agents for the selected version
-        user_agents = chrome_versions[client_identifier]
+        user_agents = browser_versions[client_identifier]
         
         # Create a new TLS client session with minimal configuration
         client = tls_client.Session(
@@ -336,32 +376,129 @@ class TLS_Scraper:
         except Exception as e:
             print(f"⚠️ Error recording request to CSV: {str(e)}")
 
+    def generate_stealth_cookie(self) -> str:
+        def randstr(length=10):
+            return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+
+        def randnum(length=5):
+            return ''.join(random.choices(string.digits, k=length))
+
+        timestamp = int(datetime.utcnow().timestamp())
+        future = int((datetime.utcnow() + timedelta(days=365)).timestamp())
+
+        cookie_parts = [
+            f"_ga=GA1.1.{randnum(9)}.{timestamp}",
+            f"FPID=FPID2.2.{quote(randstr(30))}.{timestamp}",
+            f"_gcl_au=1.1.{randnum(10)}.{timestamp}",
+            f"_tp_ws_id=s{random.randint(1,9)}",
+            f"_clck={randstr(8)}%7C2%7Cfv2%7C1%7C{randnum(10)}",
+            f"FPGSID=1.{future}.{future}.G-{randstr(10)}.{randstr(10)}",
+            f"__rtbh.lid=%7B%22eventType%22%3A%22lid%22%2C%22id%22%3A%22{randstr(20)}%22%2C%22expiryDate%22%3A%2220{random.randint(26,28)}-04-14T06%3A52%3A44.110Z%22%7D",
+            f"_tptp_id=eyJfcmFpbHMiOnsibWVzc2FnZSI6IkltRm{randstr(12)}PT0iLCJleHAiOiIyMDI{random.randint(5,7)}LTA0LTE0VDA2OjUyOjQ3LjU5MFoiLCJwdXIiOiJjb29raWUuX3RwdHBfaWQifX0%3D--{randstr(32)}",
+            f"datadome={randstr(64)}~{randstr(20)}",
+            f"_trovaprezzi_session={quote(randstr(120))}",
+        ]
+
+        return "; ".join(cookie_parts)
+    
     def get_headers(self):
+        try:
+            # Extract browser version and platform from user agent
+            platform = "Linux"  # Default platform
+            if "Windows" in self.user_agent:
+                platform = "Windows"
+            elif "Macintosh" in self.user_agent:
+                platform = "macOS"
+            elif "Linux" in self.user_agent:
+                platform = "Linux"
+            elif "CrOS" in self.user_agent:
+                platform = "Chrome OS"
+            elif "iPhone" in self.user_agent or "iPad" in self.user_agent or "iPod" in self.user_agent:
+                platform = "iOS"
+            elif "Android" in self.user_agent:
+                platform = "Android"
+
+            # Extract browser version based on user agent pattern
+            if "Chrome/" in self.user_agent:
+                version = self.user_agent.split("Chrome/")[1].split(".")[0]
+                full_version = self.user_agent.split("Chrome/")[1].split(" ")[0]
+            elif "Firefox/" in self.user_agent:
+                version = self.user_agent.split("Firefox/")[1].split(".")[0]
+                full_version = self.user_agent.split("Firefox/")[1].split(" ")[0]
+            elif "Safari/" in self.user_agent and "Version/" in self.user_agent:
+                version = self.user_agent.split("Version/")[1].split(".")[0]
+                full_version = self.user_agent.split("Version/")[1].split(" ")[0]
+            elif "Edg/" in self.user_agent:
+                version = self.user_agent.split("Edg/")[1].split(".")[0]
+                full_version = self.user_agent.split("Edg/")[1].split(" ")[0]
+            elif "OPR/" in self.user_agent:
+                version = self.user_agent.split("OPR/")[1].split(".")[0]
+                full_version = self.user_agent.split("OPR/")[1].split(" ")[0]
+            elif "Brave/" in self.user_agent:
+                version = self.user_agent.split("Brave/")[1].split(".")[0]
+                full_version = self.user_agent.split("Brave/")[1].split(" ")[0]
+            else:
+                print("⚠️ Error parsing user agent, using default version")
+                version = "120"
+                full_version = "120.0.0.0"
+
+            # Get browser name for Sec-CH-UA header
+            browser_name = "Not A;Brand"
+            if "Chrome" in self.user_agent and "Edg/" not in self.user_agent and "OPR/" not in self.user_agent:
+                browser_name = "Google Chrome"
+            elif "Firefox/" in self.user_agent:
+                browser_name = "Firefox"
+            elif "Safari/" in self.user_agent and "Chrome" not in self.user_agent:
+                browser_name = "Safari"
+            elif "Edg/" in self.user_agent:
+                browser_name = "Microsoft Edge"
+            elif "OPR/" in self.user_agent:
+                browser_name = "Opera"
+            elif "Brave/" in self.user_agent:
+                browser_name = "Brave"
+
+        except IndexError:
+            print("⚠️ Error parsing user agent, using default values")
+            version = "120"
+            full_version = "120.0.0.0"
+            browser_name = "Not A;Brand"
+
         accept_values = [
             "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
         ]
-        
-        # Get base headers
+
+        # Customize Sec-CH-UA based on browser
+        if browser_name == "Firefox":
+            sec_ch_ua = f'"{browser_name}";v="{version}", "Gecko";v="{version}", "Firefox";v="{version}"'
+        elif browser_name == "Safari":
+            sec_ch_ua = f'"{browser_name}";v="{version}", "Webkit";v="{version}", "Safari";v="{version}"'
+        else:
+            sec_ch_ua = f'"Chromium";v="{version}", "Not:A-Brand";v="24", "{browser_name}";v="{version}"'
+
         headers = {
             "User-Agent": self.user_agent,
             "Accept": random.choice(accept_values),
-            "Accept-Encoding": "gzip, deflate, br",
-            "Connection": "keep-alive",
+            "Accept-Encoding": "gzip, deflate, br, zstd",
+            "Accept-Language": "it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7",
+            "Cookie": self.generate_stealth_cookie(),
+            "DNT": "1",
+            "Priority": "u=0, i",
             "Upgrade-Insecure-Requests": "1",
             "Referer": random.choice(self.referers),
             "Sec-Fetch-Dest": "document",
-            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Mode": "navigate", 
             "Sec-Fetch-Site": "same-origin",
             "Sec-Fetch-User": "?1",
-            "Cache-Control": "no-cache",
+            "Sec-CH-UA": sec_ch_ua,
+            "Sec-CH-UA-Arch": "x86",
+            "Sec-CH-UA-Mobile": "?0",
+            "Sec-CH-UA-Model": '""',
+            "Sec-CH-UA-Platform": f'"{platform}"',
+            "Sec-CH-UA-Full-Version-List": f'"Chromium";v="{full_version}", "Not:A-Brand";v="24.0.0.0", "{browser_name}";v="{full_version}"'
         }
-        
-        # Add fingerprint headers
-        fingerprint_headers = generate_fingerprint_header()
-        headers.update(fingerprint_headers)
-        
+        # headers.update(generate_fingerprint_header())
         return headers
 
     def get_random_proxy(self, method="swiftshadow"):
@@ -982,26 +1119,6 @@ class TrovaPrezziRequester(Spider):
             "DNT": "1",
             "Referer": random.choice(self.referers),
         }
-
-    def start_requests(self):
-        self.logger.info("Starting requests with URLs: %s", self.start_urls)
-        for url in self.start_urls:
-            self.logger.info("Making request to: %s", url)
-            headers = self.get_random_headers()
-            self.logger.debug("Using headers: %s", headers)
-            yield Request(
-                url,
-                callback=self.parse,
-                headers=headers,
-                meta={
-                    "dont_retry": False,
-                    "retry_times": 0,
-                    "handle_httpstatus_all": True,
-                    "download_timeout": 30,
-                },
-                dont_filter=True,
-                cookies={},
-            )
 
     def parse(self, response):
         self.logger.info("=" * 70)
